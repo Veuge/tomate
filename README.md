@@ -1,6 +1,6 @@
-# Pomodoro
+# Tomate
 
-Minimal, cross-device Pomodoro timer: focus / short break / long break, loud alarms,
+Minimal, cross-device Pomodoro (tomate) timer: focus / short break / long break, loud alarms,
 auto or manual start, background sounds, colored tags with icons, a GitHub-style
 heatmap and per-tag stats. Installable as a PWA on iOS, Android, macOS and Windows.
 Sessions from every device sync to one account through Supabase.
