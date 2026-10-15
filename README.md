@@ -5,6 +5,10 @@ auto or manual start, background sounds, colored tags with icons, a GitHub-style
 heatmap and per-tag stats. Installable as a PWA on iOS, Android, macOS and Windows.
 Sessions from every device sync to one account through Supabase.
 
+| Timer | Stats | Tags | Settings |
+|:---:|:---:|:---:|:---:|
+| ![Timer](docs/screenshots/timer.png) | ![Stats](docs/screenshots/stats.png) | ![Tags](docs/screenshots/tags.png) | ![Settings](docs/screenshots/settings.png) |
+
 ## Run
 
 ```sh
