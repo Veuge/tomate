@@ -38,6 +38,19 @@ Cloudflare Pages) with SPA fallback to `index.html`.
 - **Android:** Chrome → Install app
 - **macOS / Windows:** Chrome or Edge → install icon in the address bar (Safari on macOS: File → Add to Dock)
 
+## Release
+
+From an up-to-date, clean `main`:
+
+```sh
+npm run release:patch   # or release:minor / release:major
+```
+
+This runs the tests and build, then `npm version` on a `release/vX.Y.Z` branch (commit +
+tag), pushes the branch, opens the PR (with `gh` if installed, otherwise in the browser),
+and pushes the `vX.Y.Z` tag. Merge the PR with **Create a merge commit**, not squash, so
+the tagged commit ends up on `main`. The version is shown in Settings → Account & data.
+
 ## How it works
 
 - `src/features/timer/engine.ts`: a pure state machine. Time comes from timestamps
