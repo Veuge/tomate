@@ -30,6 +30,8 @@ interface TimerStore {
   start: () => void;
   pause: () => void;
   reset: () => void;
+  /** Discard the current focus session without recording it. */
+  stop: () => void;
   skip: () => void;
   selectPhase: (p: Phase) => void;
   setTag: (id: string | null) => void;
@@ -47,6 +49,7 @@ export const useTimer = create<TimerStore>()(
       },
       pause: () => set({ timer: E.pause(get().timer, Date.now()) }),
       reset: () => set({ timer: E.reset(get().timer, cfg()) }),
+      stop: () => set({ timer: E.stop(get().timer, cfg()) }),
       skip: () => {
         const { state, finished } = E.skip(get().timer, cfg(), Date.now());
         set({ timer: state });

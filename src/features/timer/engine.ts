@@ -74,6 +74,14 @@ export function reset(s: TimerState, cfg: TimerConfig): TimerState {
   return idleIn(s.phase, cfg, s.focusCount, s.tagId);
 }
 
+/**
+ * Abandon a focus session: back to a fresh focus phase, nothing reported as finished
+ * (so nothing is recorded) and the long-break count is unchanged.
+ */
+export function stop(s: TimerState, cfg: TimerConfig): TimerState {
+  return idleIn("focus", cfg, s.focusCount, s.tagId);
+}
+
 /** Manually choose a phase (only meaningful when not running). */
 export function selectPhase(s: TimerState, phase: Phase, cfg: TimerConfig): TimerState {
   return idleIn(phase, cfg, s.focusCount, s.tagId);

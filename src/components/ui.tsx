@@ -5,13 +5,14 @@ export function cx(...c: (string | false | null | undefined)[]): string {
   return c.filter(Boolean).join(" ");
 }
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "destructive";
 
 const variants: Record<Variant, string> = {
   primary: "bg-fg text-bg hover:opacity-90",
   secondary: "bg-surface-2 text-fg hover:bg-line",
   ghost: "text-muted hover:text-fg hover:bg-surface-2",
   danger: "text-red-500 hover:bg-red-500/10",
+  destructive: "bg-red-500 text-white hover:bg-red-600",
 };
 
 export function Button({
@@ -128,5 +129,37 @@ export function Sheet({
         {children}
       </div>
     </div>
+  );
+}
+
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel,
+  cancelLabel = "Cancel",
+  onConfirm,
+  onCancel,
+}: {
+  open: boolean;
+  title: string;
+  message: ReactNode;
+  confirmLabel: string;
+  cancelLabel?: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <Sheet open={open} onClose={onCancel} title={title}>
+      <p className="text-sm text-muted mb-6">{message}</p>
+      <div className="flex flex-col-reverse sm:flex-row gap-2">
+        <Button className="sm:flex-1 h-11" onClick={onCancel}>
+          {cancelLabel}
+        </Button>
+        <Button variant="destructive" className="sm:flex-1 h-11" onClick={onConfirm}>
+          {confirmLabel}
+        </Button>
+      </div>
+    </Sheet>
   );
 }

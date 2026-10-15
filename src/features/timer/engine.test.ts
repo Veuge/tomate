@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { initialState, pause, remaining, skip, start, tick, type TimerConfig, type TimerState } from "./engine";
+import { initialState, pause, remaining, skip, start, stop, tick, type TimerConfig, type TimerState } from "./engine";
 
 const MIN = 60_000;
 const cfg: TimerConfig = {
@@ -78,5 +78,16 @@ describe("timer engine", () => {
     expect(t.state).toMatchObject({ phase: "short_break", status: "idle", focusCount: 0 });
     s = initialState(cfg);
     expect(skip(s, cfg, 0).finished).toBeNull();
+  });
+
+  it("stop discards the focus session without finishing it", () => {
+    // One completed focus first, so we can check the long-break count survives.
+    let s = runToEnd(initialState({ ...cfg, autoStartBreaks: false }), 0).state;
+    s = skip(s, cfg, 0).state; // skip the (unstarted) break → focus
+    s = start(s, 0);
+    s = stop(s, cfg);
+    expect(s).toMatchObject({ phase: "focus", status: "idle", remainingMs: 25 * MIN, startedAt: null, focusCount: 1 });
+    // Nothing is left to complete later.
+    expect(tick(s, cfg, 99 * MIN).finished).toBeNull();
   });
 });

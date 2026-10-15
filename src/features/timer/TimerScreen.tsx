@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { ChevronDown, Pause, Play, RotateCcw, SkipForward, Volume2, VolumeX } from "lucide-react";
-import { Segmented, cx } from "@/components/ui";
+import { useEffect, useState } from "react";
+import { ChevronDown, Pause, Play, RotateCcw, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
+import { ConfirmDialog, Segmented, cx } from "@/components/ui";
 import { formatClock } from "@/lib/dates";
 import { PHASE_LABEL, type Phase } from "@/lib/types";
 import { useSettings } from "@/features/settings/store";
@@ -15,11 +15,14 @@ import { TagPicker } from "./TagPicker";
 const AMBIENT_LABEL = { none: "", white: "White noise", pink: "Pink noise", brown: "Brown noise", rain: "Rain", ticking: "Ticking" };
 
 export function TimerScreen() {
-  const { timer, start, pause, reset, skip, selectPhase, setTag } = useTimer();
+  const { timer, start, pause, reset, stop, skip, selectPhase, setTag } = useTimer();
   const settings = useSettings();
   const tags = useTags();
   const [picking, setPicking] = useState(false);
+  const [confirmingStop, setConfirmingStop] = useState(false);
   const now = useNow(timer.status === "running");
+  const canStop = timer.phase === "focus" && timer.status !== "idle";
+  useEffect(() => setConfirmingStop(false), [timer.startedAt]);
 
   const left = remaining(timer, now);
   const progress = timer.plannedMs ? left / timer.plannedMs : 0;
@@ -83,9 +86,15 @@ export function TimerScreen() {
       </button>
 
       <div className="flex items-center gap-6">
-        <RoundButton label="Reset" onClick={reset} disabled={timer.status === "idle"}>
-          <RotateCcw size={22} />
-        </RoundButton>
+        {canStop ? (
+          <RoundButton label="Stop" onClick={() => setConfirmingStop(true)}>
+            <Square size={20} fill="currentColor" />
+          </RoundButton>
+        ) : (
+          <RoundButton label="Reset" onClick={reset} disabled={timer.status === "idle"}>
+            <RotateCcw size={22} />
+          </RoundButton>
+        )}
         <button
           onClick={running ? pause : start}
           aria-label={running ? "Pause" : "Start"}
@@ -100,6 +109,19 @@ export function TimerScreen() {
       </div>
 
       <TagPicker open={picking} onClose={() => setPicking(false)} value={timer.tagId} onChange={setTag} />
+      <ConfirmDialog
+        // Closes by itself if the session ends (and gets saved) while the dialog is open.
+        open={confirmingStop && canStop}
+        title="Stop this focus session?"
+        message={`Your progress (${formatClock(timer.plannedMs - left)} so far) won't be saved to your history.`}
+        confirmLabel="Stop & discard"
+        cancelLabel="Keep focusing"
+        onCancel={() => setConfirmingStop(false)}
+        onConfirm={() => {
+          stop();
+          setConfirmingStop(false);
+        }}
+      />
     </div>
   );
 }
