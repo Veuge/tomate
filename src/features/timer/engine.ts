@@ -69,11 +69,6 @@ export function pause(s: TimerState, now: number): TimerState {
   return { ...s, status: "paused", remainingMs: remaining(s, now), endsAt: null };
 }
 
-/** Discard progress and return to the beginning of the current phase. */
-export function reset(s: TimerState, cfg: TimerConfig): TimerState {
-  return idleIn(s.phase, cfg, s.focusCount, s.tagId);
-}
-
 /**
  * Abandon a focus session: back to a fresh focus phase, nothing reported as finished
  * (so nothing is recorded) and the long-break count is unchanged.

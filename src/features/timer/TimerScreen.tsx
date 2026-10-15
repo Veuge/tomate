@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import { ChevronDown, Pause, Play, RotateCcw, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
+import { ChevronDown, Pause, Play, SkipForward, Square, Volume2, VolumeX } from "lucide-react";
 import { ConfirmDialog, Segmented, cx } from "@/components/ui";
+import { useTooltip } from "@/components/Tooltip";
 import { formatClock } from "@/lib/dates";
 import { PHASE_LABEL, type Phase } from "@/lib/types";
 import { useSettings } from "@/features/settings/store";
@@ -15,7 +16,7 @@ import { TagPicker } from "./TagPicker";
 const AMBIENT_LABEL = { none: "", white: "White noise", pink: "Pink noise", brown: "Brown noise", rain: "Rain", ticking: "Ticking" };
 
 export function TimerScreen() {
-  const { timer, start, pause, reset, stop, skip, selectPhase, setTag } = useTimer();
+  const { timer, start, pause, stop, skip, selectPhase, setTag } = useTimer();
   const settings = useSettings();
   const tags = useTags();
   const [picking, setPicking] = useState(false);
@@ -87,25 +88,29 @@ export function TimerScreen() {
 
       <div className="flex items-center gap-6">
         {canStop ? (
-          <RoundButton label="Stop" onClick={() => setConfirmingStop(true)}>
+          <ControlButton label="Stop" tip="Stop without saving" onClick={() => setConfirmingStop(true)}>
             <Square size={20} fill="currentColor" />
-          </RoundButton>
+          </ControlButton>
         ) : (
-          <RoundButton label="Reset" onClick={reset} disabled={timer.status === "idle"}>
-            <RotateCcw size={22} />
-          </RoundButton>
+          // Keeps the play button centered when there's nothing to stop.
+          <span aria-hidden className="h-14 w-14" />
         )}
-        <button
+        <ControlButton
+          label={running ? "Pause" : timer.status === "paused" ? "Resume" : "Start"}
+          tip={running ? "Pause" : timer.status === "paused" ? "Resume" : `Start ${PHASE_LABEL[timer.phase].toLowerCase()}`}
           onClick={running ? pause : start}
-          aria-label={running ? "Pause" : "Start"}
-          className="grid place-items-center h-20 w-20 rounded-full text-white shadow-lg transition active:scale-95"
+          className="h-20 w-20 text-white shadow-lg active:scale-95"
           style={{ background: color }}
         >
           {running ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" className="ml-1" />}
-        </button>
-        <RoundButton label="Skip" onClick={skip}>
+        </ControlButton>
+        <ControlButton
+          label="Skip"
+          tip={timer.phase === "focus" ? "Skip to short break" : "Skip to focus"}
+          onClick={skip}
+        >
           <SkipForward size={22} />
-        </RoundButton>
+        </ControlButton>
       </div>
 
       <TagPicker open={picking} onClose={() => setPicking(false)} value={timer.tagId} onChange={setTag} />
@@ -126,15 +131,32 @@ export function TimerScreen() {
   );
 }
 
-function RoundButton(p: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+function ControlButton(p: {
+  label: string;
+  tip: string;
+  onClick: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+  children: React.ReactNode;
+}) {
+  const { triggerProps, tooltip } = useTooltip(p.tip);
   return (
-    <button
-      onClick={p.onClick}
-      disabled={p.disabled}
-      aria-label={p.label}
-      className="grid place-items-center h-14 w-14 rounded-full bg-surface-2 text-fg hover:bg-line disabled:opacity-30 transition"
-    >
-      {p.children}
-    </button>
+    <span className="relative inline-flex">
+      <button
+        {...triggerProps}
+        // Don't make screen readers say "Pause, Pause" when the tip only repeats the label.
+        aria-describedby={p.tip === p.label ? undefined : triggerProps["aria-describedby"]}
+        onClick={p.onClick}
+        aria-label={p.label}
+        style={p.style}
+        className={cx(
+          "grid place-items-center rounded-full transition",
+          p.className ?? "h-14 w-14 bg-surface-2 text-fg hover:bg-line",
+        )}
+      >
+        {p.children}
+      </button>
+      {tooltip}
+    </span>
   );
 }
