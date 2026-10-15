@@ -1,7 +1,7 @@
-import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, type ReactNode } from "react";
+import { Link, useBlocker } from "react-router-dom";
 import { Bell, Download, LogOut, Minus, Monitor, Moon, Plus, Sun } from "lucide-react";
-import { Button, Card, SectionTitle, Segmented, Toggle } from "@/components/ui";
+import { Button, Card, ConfirmDialog, SectionTitle, Segmented, Toggle } from "@/components/ui";
 import { db } from "@/lib/db";
 import { supabase } from "@/lib/supabase";
 import { useSyncStatus } from "@/lib/sync";
@@ -9,11 +9,26 @@ import { playAlarm } from "@/features/audio/alarm";
 import { unlockAudio } from "@/features/audio/context";
 import { useAuth } from "@/features/auth/useAuth";
 import { SyncBadge } from "@/features/auth/SyncBadge";
-import { useSettings, type AlarmSound, type AmbientSound, type Theme } from "./store";
+import type { AlarmSound, AmbientSound, Theme } from "./store";
+import { useSettingsDraft } from "./useSettingsDraft";
 
 export function SettingsScreen() {
-  const s = useSettings();
+  const draft = useSettingsDraft();
+  const s = draft.value;
   const { user } = useAuth();
+
+  // In-app navigation with unsaved changes → our confirm dialog.
+  const blocker = useBlocker(({ currentLocation, nextLocation }) => draft.dirty && currentLocation.pathname !== nextLocation.pathname);
+  // Closing/reloading the tab → the browser's own "Leave site?" prompt (its text can't be customized).
+  useEffect(() => {
+    if (!draft.dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [draft.dirty]);
   const lastSyncedAt = useSyncStatus((x) => x.lastSyncedAt);
 
   const exportJson = async () => {
@@ -35,25 +50,25 @@ export function SettingsScreen() {
         <SectionTitle>Timer</SectionTitle>
         <Card className="divide-y divide-line py-1 sm:py-1">
           <Row label="Focus" hint="minutes">
-            <Stepper value={s.focusMin} min={1} max={180} onChange={(v) => s.update({ focusMin: v })} />
+            <Stepper value={s.focusMin} min={1} max={180} onChange={(v) => draft.set({ focusMin: v })} />
           </Row>
           <Row label="Short break" hint="minutes">
-            <Stepper value={s.shortMin} min={1} max={60} onChange={(v) => s.update({ shortMin: v })} />
+            <Stepper value={s.shortMin} min={1} max={60} onChange={(v) => draft.set({ shortMin: v })} />
           </Row>
           <Row label="Long break" hint="minutes">
-            <Stepper value={s.longMin} min={1} max={90} onChange={(v) => s.update({ longMin: v })} />
+            <Stepper value={s.longMin} min={1} max={90} onChange={(v) => draft.set({ longMin: v })} />
           </Row>
           <Row label="Long break every" hint="focus sessions">
-            <Stepper value={s.longBreakInterval} min={1} max={12} onChange={(v) => s.update({ longBreakInterval: v })} />
+            <Stepper value={s.longBreakInterval} min={1} max={12} onChange={(v) => draft.set({ longBreakInterval: v })} />
           </Row>
           <Row label="Auto-start breaks">
-            <Toggle label="Auto-start breaks" checked={s.autoStartBreaks} onChange={(v) => s.update({ autoStartBreaks: v })} />
+            <Toggle label="Auto-start breaks" checked={s.autoStartBreaks} onChange={(v) => draft.set({ autoStartBreaks: v })} />
           </Row>
           <Row label="Auto-start focus">
-            <Toggle label="Auto-start focus" checked={s.autoStartFocus} onChange={(v) => s.update({ autoStartFocus: v })} />
+            <Toggle label="Auto-start focus" checked={s.autoStartFocus} onChange={(v) => draft.set({ autoStartFocus: v })} />
           </Row>
           <Row label="Daily goal" hint="sessions · heatmap scale">
-            <Stepper value={s.dailyGoal} min={1} max={24} onChange={(v) => s.update({ dailyGoal: v })} />
+            <Stepper value={s.dailyGoal} min={1} max={24} onChange={(v) => draft.set({ dailyGoal: v })} />
           </Row>
         </Card>
       </section>
@@ -64,15 +79,15 @@ export function SettingsScreen() {
           <Row label="Alarm">
             <Select<AlarmSound>
               value={s.alarmSound}
-              onChange={(v) => s.update({ alarmSound: v })}
+              onChange={(v) => draft.set({ alarmSound: v })}
               options={{ bell: "Bell", digital: "Digital", chime: "Chime" }}
             />
           </Row>
           <Row label="Alarm volume">
-            <Slider value={s.alarmVolume} onChange={(v) => s.update({ alarmVolume: v })} />
+            <Slider value={s.alarmVolume} onChange={(v) => draft.set({ alarmVolume: v })} />
           </Row>
           <Row label="Alarm repeats">
-            <Stepper value={s.alarmRepeat} min={1} max={10} onChange={(v) => s.update({ alarmRepeat: v })} />
+            <Stepper value={s.alarmRepeat} min={1} max={10} onChange={(v) => draft.set({ alarmRepeat: v })} />
           </Row>
           <Row label="Test alarm">
             <Button
@@ -87,13 +102,13 @@ export function SettingsScreen() {
           <Row label="Focus background">
             <Select<AmbientSound>
               value={s.ambientSound}
-              onChange={(v) => s.update({ ambientSound: v })}
+              onChange={(v) => draft.set({ ambientSound: v })}
               options={{ none: "None", white: "White noise", pink: "Pink noise", brown: "Brown noise", rain: "Rain", ticking: "Ticking" }}
             />
           </Row>
           {s.ambientSound !== "none" && (
             <Row label="Background volume">
-              <Slider value={s.ambientVolume} onChange={(v) => s.update({ ambientVolume: v })} />
+              <Slider value={s.ambientVolume} onChange={(v) => draft.set({ ambientVolume: v })} />
             </Row>
           )}
           <Row label="Notifications" hint="when the app is in the background">
@@ -101,7 +116,7 @@ export function SettingsScreen() {
               label="Notifications"
               checked={s.notifications}
               onChange={(v) => {
-                s.update({ notifications: v });
+                draft.set({ notifications: v });
                 if (v && "Notification" in window && Notification.permission === "default") void Notification.requestPermission();
               }}
             />
@@ -114,7 +129,7 @@ export function SettingsScreen() {
         <Card>
           <Segmented<Theme>
             value={s.theme}
-            onChange={(v) => s.update({ theme: v })}
+            onChange={(v) => draft.set({ theme: v })}
             className="w-full"
             options={[
               { value: "system", label: <span className="flex items-center gap-1.5"><Monitor size={14} />System</span> },
@@ -151,6 +166,38 @@ export function SettingsScreen() {
           </Row>
         </Card>
       </section>
+
+      {draft.dirty && (
+        <>
+          {/* Room so the bar never covers the last row. */}
+          <div aria-hidden className="h-16" />
+          <div className="fixed inset-x-0 z-30 flex justify-center px-4 bottom-[calc(env(safe-area-inset-bottom)+4.75rem)] md:bottom-6 md:pl-60">
+            <div
+              role="region"
+              aria-label="Unsaved changes"
+              className="flex w-full max-w-md items-center gap-2 rounded-2xl border border-line bg-surface p-2 pl-4 shadow-xl"
+            >
+              <p className="flex-1 text-sm font-medium">Unsaved changes</p>
+              <Button variant="ghost" onClick={draft.discard}>
+                Discard
+              </Button>
+              <Button variant="primary" onClick={draft.save}>
+                Save
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
+
+      <ConfirmDialog
+        open={blocker.state === "blocked"}
+        title="Discard unsaved changes?"
+        message="You changed some settings but didn't save them. If you leave now, those changes will be lost."
+        confirmLabel="Discard changes"
+        cancelLabel="Keep editing"
+        onCancel={() => blocker.reset?.()}
+        onConfirm={() => blocker.proceed?.()}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
 import { TimerScreen } from "@/features/timer/TimerScreen";
 import { StatsScreen } from "@/features/stats/StatsScreen";
@@ -11,23 +11,25 @@ import { useTheme } from "@/features/settings/useTheme";
 import { useAuth } from "@/features/auth/useAuth";
 import { startSync } from "@/lib/sync";
 
+// A data router is required for useBlocker (unsaved-changes prompt in Settings).
+const router = createBrowserRouter([
+  {
+    element: <AppShell />,
+    children: [
+      { index: true, element: <TimerScreen /> },
+      { path: "stats", element: <StatsScreen /> },
+      { path: "tags", element: <TagsScreen /> },
+      { path: "settings", element: <SettingsScreen /> },
+      { path: "login", element: <LoginScreen /> },
+    ],
+  },
+]);
+
 export default function App() {
   useTheme();
   useTimerRunner();
   const { user } = useAuth();
   useEffect(() => (user ? startSync(user.id) : undefined), [user]);
 
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route element={<AppShell />}>
-          <Route index element={<TimerScreen />} />
-          <Route path="stats" element={<StatsScreen />} />
-          <Route path="tags" element={<TagsScreen />} />
-          <Route path="settings" element={<SettingsScreen />} />
-          <Route path="login" element={<LoginScreen />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

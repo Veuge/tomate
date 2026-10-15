@@ -2,6 +2,7 @@ import { NavLink, Outlet } from "react-router-dom";
 import { ChartColumn, Settings, Tag, Timer } from "lucide-react";
 import { cx } from "./ui";
 import { AlarmBanner } from "@/features/timer/AlarmBanner";
+import { Toaster } from "./Toast";
 
 const NAV = [
   { to: "/", label: "Timer", icon: Timer },
@@ -63,6 +64,7 @@ export function AppShell() {
       </nav>
 
       <AlarmBanner />
+      <Toaster />
     </div>
   );
 }
