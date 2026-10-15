@@ -164,6 +164,9 @@ export function SettingsScreen() {
               <Download size={16} /> Export
             </Button>
           </Row>
+          <Row label="Version">
+            <span className="text-sm text-muted tabular-nums">v{__APP_VERSION__}</span>
+          </Row>
         </Card>
       </section>
 
