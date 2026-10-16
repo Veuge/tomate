@@ -1,14 +1,14 @@
-import { NavLink, Outlet } from "react-router-dom";
-import { ChartColumn, Settings, Tag, Timer } from "lucide-react";
-import { cx } from "./ui";
-import { AlarmBanner } from "@/features/timer/AlarmBanner";
-import { Toaster } from "./Toast";
+import { NavLink, Outlet } from 'react-router-dom';
+import { ChartColumn, Settings, Tag, Timer } from 'lucide-react';
+import { cx } from './ui';
+import { AlarmBanner } from '@/features/timer/AlarmBanner';
+import { Toaster } from './Toast';
 
 const NAV = [
-  { to: "/", label: "Timer", icon: Timer },
-  { to: "/stats", label: "Stats", icon: ChartColumn },
-  { to: "/tags", label: "Tags", icon: Tag },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: '/', label: 'Timer', icon: Timer },
+  { to: '/stats', label: 'Stats', icon: ChartColumn },
+  { to: '/tags', label: 'Tags', icon: Tag },
+  { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AppShell() {
@@ -27,8 +27,8 @@ export function AppShell() {
             end
             className={({ isActive }) =>
               cx(
-                "flex items-center gap-3 rounded-xl px-3 h-10 text-sm font-medium transition",
-                isActive ? "bg-surface-2 text-fg" : "text-muted hover:text-fg",
+                'flex items-center gap-3 rounded-xl px-3 h-10 text-sm font-medium transition',
+                isActive ? 'bg-surface-2 text-fg' : 'text-muted hover:text-fg'
               )
             }
           >
@@ -53,7 +53,10 @@ export function AppShell() {
               to={to}
               end
               className={({ isActive }) =>
-                cx("flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium", isActive ? "text-fg" : "text-muted")
+                cx(
+                  'flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium',
+                  isActive ? 'text-fg' : 'text-muted'
+                )
               }
             >
               <Icon size={22} />

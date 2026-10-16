@@ -1,18 +1,18 @@
-import { db } from "@/lib/db";
-import { uuid } from "@/lib/uuid";
-import type { Session, Tag } from "@/lib/types";
-import { scheduleSync } from "@/lib/sync";
-import type { FinishedPhase } from "@/features/timer/engine";
+import { db } from '@/lib/db';
+import { uuid } from '@/lib/uuid';
+import type { Session, Tag } from '@/lib/types';
+import { scheduleSync } from '@/lib/sync';
+import type { FinishedPhase } from '@/features/timer/engine';
 
 const now = () => new Date().toISOString();
 
 function deviceName(): string {
   const ua = navigator.userAgent;
-  if (/iPhone|iPad/.test(ua)) return "ios";
-  if (/Android/.test(ua)) return "android";
-  if (/Mac/.test(ua)) return "macos";
-  if (/Windows/.test(ua)) return "windows";
-  return "web";
+  if (/iPhone|iPad/.test(ua)) return 'ios';
+  if (/Android/.test(ua)) return 'android';
+  if (/Mac/.test(ua)) return 'macos';
+  if (/Windows/.test(ua)) return 'windows';
+  return 'web';
 }
 
 export async function recordSession(f: FinishedPhase): Promise<void> {
@@ -42,7 +42,10 @@ export async function deleteSession(id: string): Promise<void> {
   scheduleSync();
 }
 
-export async function saveTag({ id, ...fields }: Pick<Tag, "name" | "color" | "icon"> & { id?: string }): Promise<string> {
+export async function saveTag({
+  id,
+  ...fields
+}: Pick<Tag, 'name' | 'color' | 'icon'> & { id?: string }): Promise<string> {
   const ts = now();
   const existing = id ? await db.tags.get(id) : undefined;
   const row: Tag = existing

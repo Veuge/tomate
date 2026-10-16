@@ -1,11 +1,11 @@
-export type Phase = "focus" | "short_break" | "long_break";
+export type Phase = 'focus' | 'short_break' | 'long_break';
 
-export const PHASES: Phase[] = ["focus", "short_break", "long_break"];
+export const PHASES: Phase[] = ['focus', 'short_break', 'long_break'];
 
 export const PHASE_LABEL: Record<Phase, string> = {
-  focus: "Focus",
-  short_break: "Short break",
-  long_break: "Long break",
+  focus: 'Focus',
+  short_break: 'Short break',
+  long_break: 'Long break',
 };
 
 export interface Tag {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 /** Re-renders every `ms` while `active`. */
 export function useNow(active: boolean, ms = 250): number {

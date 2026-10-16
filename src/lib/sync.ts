@@ -1,10 +1,10 @@
-import { create } from "zustand";
-import type Dexie from "dexie";
-import type { RealtimeChannel } from "@supabase/supabase-js";
-import { db, getMeta, setMeta } from "./db";
-import { supabase } from "./supabase";
-import type { Session, Tag } from "./types";
-import { pickSettings, useSettings, type Settings } from "@/features/settings/store";
+import { create } from 'zustand';
+import type Dexie from 'dexie';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+import { db, getMeta, setMeta } from './db';
+import { supabase } from './supabase';
+import type { Session, Tag } from './types';
+import { pickSettings, useSettings, type Settings } from '@/features/settings/store';
 
 /**
  * Offline-first sync. Every local write marks its row `dirty`; syncNow() pushes
@@ -12,17 +12,17 @@ import { pickSettings, useSettings, type Settings } from "@/features/settings/st
  * (by the server-assigned `synced_at` cursor). Conflicts: newest `updated_at` wins.
  */
 
-type TableName = "tags" | "sessions";
+type TableName = 'tags' | 'sessions';
 type Row = Tag | Session;
 
 interface SyncStatus {
-  state: "local" | "idle" | "syncing" | "error";
+  state: 'local' | 'idle' | 'syncing' | 'error';
   lastSyncedAt: string | null;
   error: string | null;
 }
 
 export const useSyncStatus = create<SyncStatus>(() => ({
-  state: supabase ? "idle" : "local",
+  state: supabase ? 'idle' : 'local',
   lastSyncedAt: null,
   error: null,
 }));
@@ -42,7 +42,7 @@ function toLocal(remote: Record<string, unknown>): Row {
 
 async function merge(table: TableName, rows: Record<string, unknown>[]): Promise<void> {
   const t = db[table] as unknown as Dexie.Table<Row, string>;
-  await db.transaction("rw", t, async () => {
+  await db.transaction('rw', t, async () => {
     for (const remote of rows) {
       const incoming = toLocal(remote);
       const local = await t.get(incoming.id);
@@ -53,12 +53,12 @@ async function merge(table: TableName, rows: Record<string, unknown>[]): Promise
 
 async function push(table: TableName): Promise<void> {
   const t = db[table] as unknown as Dexie.Table<Row, string>;
-  const rows = await t.where("dirty").equals(1).toArray();
+  const rows = await t.where('dirty').equals(1).toArray();
   if (!rows.length) return;
   const payload = rows.map(({ dirty: _d, ...r }) => r);
   const { error } = await supabase!.from(table).upsert(payload);
   if (error) throw error;
-  await db.transaction("rw", t, async () => {
+  await db.transaction('rw', t, async () => {
     for (const r of rows) {
       const cur = await t.get(r.id);
       // Only clear the flag if the row wasn't edited again while we were pushing.
@@ -69,13 +69,13 @@ async function push(table: TableName): Promise<void> {
 
 async function pull(table: TableName): Promise<void> {
   const key = `pulled:${table}`;
-  let cursor = (await getMeta(key)) ?? "1970-01-01T00:00:00Z";
+  let cursor = (await getMeta(key)) ?? '1970-01-01T00:00:00Z';
   for (;;) {
     const { data, error } = await supabase!
       .from(table)
-      .select("*")
-      .gt("synced_at", cursor)
-      .order("synced_at")
+      .select('*')
+      .gt('synced_at', cursor)
+      .order('synced_at')
       .limit(1000);
     if (error) throw error;
     if (!data.length) break;
@@ -95,49 +95,49 @@ function applyRemoteSettings(remote: { data: Partial<Settings>; updated_at: stri
 
 async function syncSettings(): Promise<void> {
   const local = pickSettings(useSettings.getState());
-  const { data, error } = await supabase!.from("settings").select("data, updated_at").maybeSingle();
+  const { data, error } = await supabase!.from('settings').select('data, updated_at').maybeSingle();
   if (error) throw error;
   if (data && applyRemoteSettings(data)) return;
   // Upload only if ours is strictly newer; equal timestamps mean we're already in sync.
   if (!data || isNewer(local.updatedAt, data.updated_at)) {
-    const { error: e } = await supabase!.from("settings").upsert({ data: local, updated_at: local.updatedAt });
+    const { error: e } = await supabase!.from('settings').upsert({ data: local, updated_at: local.updatedAt });
     if (e) throw e;
   }
 }
 
 export type SyncOutcome =
-  | { status: "synced" }
-  | { status: "skipped"; reason: "local-only" | "signed-out" | "offline" }
-  | { status: "error"; message: string };
+  | { status: 'synced' }
+  | { status: 'skipped'; reason: 'local-only' | 'signed-out' | 'offline' }
+  | { status: 'error'; message: string };
 
 let inflight: Promise<SyncOutcome> | null = null;
 let queued: Promise<SyncOutcome> | null = null;
 let pending: ReturnType<typeof setTimeout> | null = null;
 
 async function runSync(): Promise<SyncOutcome> {
-  if (!supabase) return { status: "skipped", reason: "local-only" };
+  if (!supabase) return { status: 'skipped', reason: 'local-only' };
   const { data } = await supabase.auth.getSession();
   const userId = data.session?.user.id;
-  if (!userId) return { status: "skipped", reason: "signed-out" };
-  if (!navigator.onLine) return { status: "skipped", reason: "offline" };
-  useSyncStatus.setState({ state: "syncing" });
+  if (!userId) return { status: 'skipped', reason: 'signed-out' };
+  if (!navigator.onLine) return { status: 'skipped', reason: 'offline' };
+  useSyncStatus.setState({ state: 'syncing' });
   try {
-    if ((await getMeta("userId")) !== userId) {
+    if ((await getMeta('userId')) !== userId) {
       // Different account than last time: pull everything again.
-      await db.meta.where("key").startsWith("pulled:").delete();
-      await setMeta("userId", userId);
+      await db.meta.where('key').startsWith('pulled:').delete();
+      await setMeta('userId', userId);
     }
-    await push("tags");
-    await push("sessions");
-    await pull("tags");
-    await pull("sessions");
+    await push('tags');
+    await push('sessions');
+    await pull('tags');
+    await pull('sessions');
     await syncSettings();
-    useSyncStatus.setState({ state: "idle", lastSyncedAt: new Date().toISOString(), error: null });
-    return { status: "synced" };
+    useSyncStatus.setState({ state: 'idle', lastSyncedAt: new Date().toISOString(), error: null });
+    return { status: 'synced' };
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
-    useSyncStatus.setState({ state: "error", error: message });
-    return { status: "error", message };
+    useSyncStatus.setState({ state: 'error', error: message });
+    return { status: 'error', message };
   }
 }
 
@@ -172,27 +172,27 @@ export function scheduleSync(delayMs = 1500): void {
 export function startSync(userId: string): () => void {
   if (!supabase) return () => {};
   void syncNow();
-  const onWake = () => document.visibilityState === "visible" && scheduleSync(0);
+  const onWake = () => document.visibilityState === 'visible' && scheduleSync(0);
   const onOnline = () => scheduleSync(0);
-  document.addEventListener("visibilitychange", onWake);
-  window.addEventListener("online", onOnline);
+  document.addEventListener('visibilitychange', onWake);
+  window.addEventListener('online', onOnline);
   const channel: RealtimeChannel = supabase.channel(`user:${userId}`);
-  for (const table of ["tags", "sessions"] as const) {
+  for (const table of ['tags', 'sessions'] as const) {
     channel.on(
-      "postgres_changes",
-      { event: "*", schema: "public", table, filter: `user_id=eq.${userId}` },
-      (p) => p.new && "id" in p.new && void merge(table, [p.new]),
+      'postgres_changes',
+      { event: '*', schema: 'public', table, filter: `user_id=eq.${userId}` },
+      (p) => p.new && 'id' in p.new && void merge(table, [p.new])
     );
   }
-  channel.on("postgres_changes", { event: "*", schema: "public", table: "settings" }, (p) => {
+  channel.on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, (p) => {
     const row = p.new as { data?: Partial<Settings>; updated_at?: string };
     if (row?.data && row.updated_at) applyRemoteSettings({ data: row.data, updated_at: row.updated_at });
   });
   channel.subscribe();
   // Settings changes are not synced automatically: the Settings screen syncs on Save.
   return () => {
-    document.removeEventListener("visibilitychange", onWake);
-    window.removeEventListener("online", onOnline);
+    document.removeEventListener('visibilitychange', onWake);
+    window.removeEventListener('online', onOnline);
     void supabase!.removeChannel(channel);
   };
 }

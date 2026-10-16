@@ -11,9 +11,9 @@
     <title>Pomodoro</title>
     <script>
       try {
-        const t = JSON.parse(localStorage.getItem("pomodoro-settings") || "{}")?.state?.theme ?? "system";
-        const dark = t === "dark" || (t === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-        document.documentElement.classList.toggle("dark", dark);
+        const t = JSON.parse(localStorage.getItem('pomodoro-settings') || '{}')?.state?.theme ?? 'system';
+        const dark = t === 'dark' || (t === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+        document.documentElement.classList.toggle('dark', dark);
       } catch {}
     </script>
   </head>
