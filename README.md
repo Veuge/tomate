@@ -1,5 +1,7 @@
 # Tomate
 
+[![CI](https://github.com/Veuge/tomate/actions/workflows/ci.yml/badge.svg)](https://github.com/Veuge/tomate/actions/workflows/ci.yml)
+
 Minimal, cross-device Pomodoro (tomate) timer: focus / short break / long break, loud alarms,
 auto or manual start, background sounds, colored tags with icons, a GitHub-style
 heatmap and per-tag stats. Installable as a PWA on iOS, Android, macOS and Windows.
