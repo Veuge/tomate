@@ -1,24 +1,29 @@
-import { create } from "zustand";
-import type { AlarmSound } from "@/features/settings/store";
-import type { Phase } from "@/lib/types";
-import { audioCtx } from "./context";
+import { create } from 'zustand';
+import type { AlarmSound } from '@/features/settings/store';
+import type { Phase } from '@/lib/types';
+import { audioCtx } from './context';
 
 /** One "ring" of each alarm, scheduled at time t into `out`. Returns its length in seconds. */
 const PATTERNS: Record<AlarmSound, (c: AudioContext, out: AudioNode, t: number) => number> = {
   bell(c, out, t) {
     for (const strike of [0, 0.6]) {
-      for (const [ratio, amp] of [[1, 1], [2, 0.6], [2.76, 0.4], [5.4, 0.25]] as const) {
-        tone(c, out, "sine", 880 * ratio, t + strike, 1.4, amp);
+      for (const [ratio, amp] of [
+        [1, 1],
+        [2, 0.6],
+        [2.76, 0.4],
+        [5.4, 0.25],
+      ] as const) {
+        tone(c, out, 'sine', 880 * ratio, t + strike, 1.4, amp);
       }
     }
     return 2;
   },
   digital(c, out, t) {
-    for (let i = 0; i < 4; i++) tone(c, out, "square", 1050, t + i * 0.18, 0.1, 0.5, false);
+    for (let i = 0; i < 4; i++) tone(c, out, 'square', 1050, t + i * 0.18, 0.1, 0.5, false);
     return 1.6;
   },
   chime(c, out, t) {
-    [1047, 1319, 1568, 2093].forEach((f, i) => tone(c, out, "triangle", f, t + i * 0.22, 0.9, 1));
+    [1047, 1319, 1568, 2093].forEach((f, i) => tone(c, out, 'triangle', f, t + i * 0.22, 0.9, 1));
     return 2;
   },
 };
@@ -31,7 +36,7 @@ function tone(
   at: number,
   dur: number,
   amp: number,
-  decay = true,
+  decay = true
 ) {
   const osc = c.createOscillator();
   const g = c.createGain();
@@ -57,7 +62,7 @@ export const useAlarm = create<AlarmState>(() => ({ ringing: null, stop: () => {
 export function playAlarm(sound: AlarmSound, volume: number, repeats: number, ended: Phase | null = null): void {
   useAlarm.getState().stop();
   const c = audioCtx();
-  if (c.state === "suspended") void c.resume();
+  if (c.state === 'suspended') void c.resume();
   // Compressor + makeup gain keeps the alarm loud without clipping.
   const comp = c.createDynamicsCompressor();
   comp.threshold.value = -18;

@@ -1,9 +1,9 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-export type Theme = "system" | "light" | "dark";
-export type AlarmSound = "bell" | "digital" | "chime";
-export type AmbientSound = "none" | "white" | "pink" | "brown" | "rain" | "ticking";
+export type Theme = 'system' | 'light' | 'dark';
+export type AlarmSound = 'bell' | 'digital' | 'chime';
+export type AmbientSound = 'none' | 'white' | 'pink' | 'brown' | 'rain' | 'ticking';
 
 export interface Settings {
   focusMin: number;
@@ -31,14 +31,14 @@ export const DEFAULT_SETTINGS: Settings = {
   longBreakInterval: 4,
   autoStartFocus: false,
   autoStartBreaks: true,
-  alarmSound: "bell",
+  alarmSound: 'bell',
   alarmVolume: 1,
   alarmRepeat: 3,
-  ambientSound: "none",
+  ambientSound: 'none',
   ambientVolume: 0.4,
   ambientMuted: false,
   notifications: true,
-  theme: "system",
+  theme: 'system',
   dailyGoal: 8,
   updatedAt: new Date(0).toISOString(),
 };
@@ -56,8 +56,8 @@ export const useSettings = create<SettingsStore>()(
       update: (patch) => set({ ...patch, updatedAt: new Date().toISOString() }),
       hydrate: (s) => set({ ...DEFAULT_SETTINGS, ...s }),
     }),
-    { name: "pomodoro-settings" },
-  ),
+    { name: 'pomodoro-settings' }
+  )
 );
 
 export function pickSettings(s: SettingsStore): Settings {

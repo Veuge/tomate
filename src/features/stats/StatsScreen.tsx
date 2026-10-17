@@ -1,17 +1,17 @@
-import { useMemo, useState } from "react";
-import { format, parseISO, startOfWeek } from "date-fns";
-import { Trash2 } from "lucide-react";
-import { Card, SectionTitle, cx } from "@/components/ui";
-import { dayKey, formatMinutes } from "@/lib/dates";
-import { PHASE_LABEL } from "@/lib/types";
-import { useSettings } from "@/features/settings/store";
-import { useSessions, useTags } from "@/features/sessions/hooks";
-import { countByDay, countable, currentStreak } from "@/features/sessions/stats";
-import { deleteSession } from "@/features/sessions/repo";
-import { TagIcon } from "@/features/tags/palette";
-import { SyncBadge } from "@/features/auth/SyncBadge";
-import { Heatmap, HeatmapLegend } from "./Heatmap";
-import { TagBreakdown } from "./TagBreakdown";
+import { useMemo, useState } from 'react';
+import { format, parseISO, startOfWeek } from 'date-fns';
+import { Trash2 } from 'lucide-react';
+import { Card, SectionTitle, cx } from '@/components/ui';
+import { dayKey, formatMinutes } from '@/lib/dates';
+import { PHASE_LABEL } from '@/lib/types';
+import { useSettings } from '@/features/settings/store';
+import { useSessions, useTags } from '@/features/sessions/hooks';
+import { countByDay, countable, currentStreak } from '@/features/sessions/stats';
+import { deleteSession } from '@/features/sessions/repo';
+import { TagIcon } from '@/features/tags/palette';
+import { SyncBadge } from '@/features/auth/SyncBadge';
+import { Heatmap, HeatmapLegend } from './Heatmap';
+import { TagBreakdown } from './TagBreakdown';
 
 export function StatsScreen() {
   const sessions = useSessions();
@@ -23,7 +23,7 @@ export function StatsScreen() {
   const filtered = useMemo(() => countable(sessions, tagId), [sessions, tagId]);
   const byDay = useMemo(() => countByDay(filtered), [filtered]);
   const tag = tags.find((t) => t.id === tagId);
-  const color = tag?.color ?? "var(--accent)";
+  const color = tag?.color ?? 'var(--accent)';
 
   const today = dayKey(new Date());
   const weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
@@ -35,10 +35,10 @@ export function StatsScreen() {
     () =>
       day
         ? sessions.filter(
-            (s) => !s.deleted && s.kind === "focus" && dayKey(s.started_at) === day && (!tagId || s.tag_id === tagId),
+            (s) => !s.deleted && s.kind === 'focus' && dayKey(s.started_at) === day && (!tagId || s.tag_id === tagId)
           )
         : [],
-    [sessions, day, tagId],
+    [sessions, day, tagId]
   );
 
   return (
@@ -61,18 +61,31 @@ export function StatsScreen() {
           <Chip active={tagId === null} onClick={() => setTagId(null)} color="var(--accent)">
             All
           </Chip>
-          {tags.filter((t) => !t.archived).map((t) => (
-            <Chip key={t.id} active={tagId === t.id} onClick={() => setTagId(t.id)} color={t.color}>
-              <TagIcon name={t.icon} size={14} />
-              {t.name}
-            </Chip>
-          ))}
+          {tags
+            .filter((t) => !t.archived)
+            .map((t) => (
+              <Chip key={t.id} active={tagId === t.id} onClick={() => setTagId(t.id)} color={t.color}>
+                <TagIcon name={t.icon} size={14} />
+                {t.name}
+              </Chip>
+            ))}
         </div>
-        <Heatmap byDay={byDay} goal={goal} color={color} selected={day} onSelect={(k) => setDay(k === day ? null : k)} />
+        <Heatmap
+          byDay={byDay}
+          goal={goal}
+          color={color}
+          selected={day}
+          onSelect={(k) => setDay(k === day ? null : k)}
+        />
 
         {day && (
           <div className="mt-4 border-t border-line pt-4">
-            <p className="text-sm font-medium mb-2">{format(parseISO(day), day.startsWith(String(new Date().getFullYear())) ? "EEEE, MMMM d" : "EEEE, MMMM d, yyyy")}</p>
+            <p className="text-sm font-medium mb-2">
+              {format(
+                parseISO(day),
+                day.startsWith(String(new Date().getFullYear())) ? 'EEEE, MMMM d' : 'EEEE, MMMM d, yyyy'
+              )}
+            </p>
             {daySessions.length === 0 ? (
               <p className="text-sm text-muted">No focus sessions.</p>
             ) : (
@@ -81,17 +94,20 @@ export function StatsScreen() {
                   const t = tags.find((x) => x.id === s.tag_id);
                   return (
                     <li key={s.id} className="group flex items-center gap-3 py-2 text-sm">
-                      <span className="h-2 w-2 rounded-full" style={{ background: t?.color ?? "var(--muted)" }} />
+                      <span className="h-2 w-2 rounded-full" style={{ background: t?.color ?? 'var(--muted)' }} />
                       <span className="tabular-nums text-muted w-24 shrink-0">
-                        {format(new Date(s.started_at), "HH:mm")}–{format(new Date(s.ended_at), "HH:mm")}
+                        {format(new Date(s.started_at), 'HH:mm')}–{format(new Date(s.ended_at), 'HH:mm')}
                       </span>
                       <span className="flex-1 truncate">
-                        {t?.name ?? "No tag"}
+                        {t?.name ?? 'No tag'}
                         {!s.completed && <span className="text-muted"> · partial</span>}
                       </span>
                       <span className="tabular-nums text-muted">{formatMinutes(s.actual_seconds / 60)}</span>
                       <button
-                        onClick={() => confirm(`Delete this ${PHASE_LABEL[s.kind].toLowerCase()} session?`) && void deleteSession(s.id)}
+                        onClick={() =>
+                          confirm(`Delete this ${PHASE_LABEL[s.kind].toLowerCase()} session?`) &&
+                          void deleteSession(s.id)
+                        }
                         aria-label="Delete session"
                         className="text-muted hover:text-red-500 sm:opacity-0 sm:group-hover:opacity-100 p-1"
                       >
@@ -126,8 +142,8 @@ function Chip(p: { active: boolean; onClick: () => void; color: string; children
     <button
       onClick={p.onClick}
       className={cx(
-        "flex items-center gap-1.5 shrink-0 rounded-full px-3 h-8 text-sm font-medium border transition",
-        p.active ? "border-transparent text-fg" : "border-line text-muted hover:text-fg",
+        'flex items-center gap-1.5 shrink-0 rounded-full px-3 h-8 text-sm font-medium border transition',
+        p.active ? 'border-transparent text-fg' : 'border-line text-muted hover:text-fg'
       )}
       style={p.active ? { background: `color-mix(in srgb, ${p.color} 18%, transparent)` } : undefined}
     >

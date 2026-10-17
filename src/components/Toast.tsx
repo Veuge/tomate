@@ -1,9 +1,9 @@
-import { useEffect } from "react";
-import { create } from "zustand";
-import { CircleAlert, CircleCheck, CloudOff, LoaderCircle, X } from "lucide-react";
-import { cx } from "./ui";
+import { useEffect } from 'react';
+import { create } from 'zustand';
+import { CircleAlert, CircleCheck, CloudOff, LoaderCircle, X } from 'lucide-react';
+import { cx } from './ui';
 
-type Kind = "pending" | "success" | "info" | "error";
+type Kind = 'pending' | 'success' | 'info' | 'error';
 
 export interface Toast {
   id: number;
@@ -16,14 +16,14 @@ const useToast = create<{ toast: Toast | null }>(() => ({ toast: null }));
 let nextId = 1;
 
 /** Shows a toast (replacing any current one) and returns its id. */
-export function showToast(t: Omit<Toast, "id">): number {
+export function showToast(t: Omit<Toast, 'id'>): number {
   const id = nextId++;
   useToast.setState({ toast: { ...t, id } });
   return id;
 }
 
 /** Updates a toast in place, if it's still the one showing. */
-export function updateToast(id: number, t: Omit<Toast, "id">): void {
+export function updateToast(id: number, t: Omit<Toast, 'id'>): void {
   if (useToast.getState().toast?.id === id) useToast.setState({ toast: { ...t, id } });
 }
 
@@ -58,8 +58,8 @@ export function Toaster() {
       {toast && (
         <div
           className={cx(
-            "pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border bg-surface p-3 pl-4 shadow-xl",
-            toast.kind === "error" ? "border-red-500/40" : "border-line",
+            'pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-2xl border bg-surface p-3 pl-4 shadow-xl',
+            toast.kind === 'error' ? 'border-red-500/40' : 'border-line'
           )}
         >
           <span className="mt-0.5 shrink-0">{ICON[toast.kind]}</span>
@@ -67,7 +67,7 @@ export function Toaster() {
             <p className="text-sm font-medium">{toast.text}</p>
             {toast.detail && <p className="mt-0.5 text-xs text-muted break-words">{toast.detail}</p>}
           </div>
-          {toast.kind !== "pending" && (
+          {toast.kind !== 'pending' && (
             <button onClick={dismiss} aria-label="Dismiss" className="shrink-0 p-0.5 text-muted hover:text-fg">
               <X size={16} />
             </button>

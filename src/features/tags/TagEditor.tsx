@@ -1,28 +1,25 @@
-import { useEffect, useMemo, useState } from "react";
-import { Archive, ArchiveRestore, Search, Trash2 } from "lucide-react";
-import { Button, Sheet, cx } from "@/components/ui";
-import type { Tag } from "@/lib/types";
-import { deleteTag, saveTag, setTagArchived } from "@/features/sessions/repo";
-import { TAG_COLORS, TAG_ICONS, TagIcon } from "./palette";
+import { useEffect, useMemo, useState } from 'react';
+import { Archive, ArchiveRestore, Search, Trash2 } from 'lucide-react';
+import { Button, Sheet, cx } from '@/components/ui';
+import type { Tag } from '@/lib/types';
+import { deleteTag, saveTag, setTagArchived } from '@/features/sessions/repo';
+import { TAG_COLORS, TAG_ICONS, TagIcon } from './palette';
 
 export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | null; onClose: () => void }) {
-  const [name, setName] = useState("");
+  const [name, setName] = useState('');
   const [color, setColor] = useState(TAG_COLORS[0]);
-  const [icon, setIcon] = useState("circle");
-  const [query, setQuery] = useState("");
+  const [icon, setIcon] = useState('circle');
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     if (!open) return;
-    setName(tag?.name ?? "");
+    setName(tag?.name ?? '');
     setColor(tag?.color ?? TAG_COLORS[Math.floor(Math.random() * TAG_COLORS.length)]);
-    setIcon(tag?.icon ?? "circle");
-    setQuery("");
+    setIcon(tag?.icon ?? 'circle');
+    setQuery('');
   }, [open, tag]);
 
-  const icons = useMemo(
-    () => Object.keys(TAG_ICONS).filter((n) => n.includes(query.trim().toLowerCase())),
-    [query],
-  );
+  const icons = useMemo(() => Object.keys(TAG_ICONS).filter((n) => n.includes(query.trim().toLowerCase())), [query]);
 
   const save = async () => {
     if (!name.trim()) return;
@@ -31,7 +28,7 @@ export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | nu
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title={tag ? "Edit tag" : "New tag"}>
+    <Sheet open={open} onClose={onClose} title={tag ? 'Edit tag' : 'New tag'}>
       <form
         className="flex flex-col gap-5"
         onSubmit={(e) => {
@@ -40,7 +37,10 @@ export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | nu
         }}
       >
         <div className="flex items-center gap-3">
-          <span className="grid place-items-center h-12 w-12 shrink-0 rounded-2xl" style={{ background: `${color}22`, color }}>
+          <span
+            className="grid place-items-center h-12 w-12 shrink-0 rounded-2xl"
+            style={{ background: `${color}22`, color }}
+          >
             <TagIcon name={icon} size={24} />
           </span>
           <input
@@ -62,8 +62,11 @@ export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | nu
                 key={c}
                 onClick={() => setColor(c)}
                 aria-label={`Color ${c}`}
-                className={cx("aspect-square rounded-xl transition", color === c && "ring-2 ring-offset-2 ring-offset-surface")}
-                style={{ background: c, ["--tw-ring-color" as string]: c }}
+                className={cx(
+                  'aspect-square rounded-xl transition',
+                  color === c && 'ring-2 ring-offset-2 ring-offset-surface'
+                )}
+                style={{ background: c, ['--tw-ring-color' as string]: c }}
               />
             ))}
           </div>
@@ -89,8 +92,8 @@ export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | nu
                 aria-label={n}
                 title={n}
                 className={cx(
-                  "grid place-items-center aspect-square rounded-xl transition",
-                  icon === n ? "text-white" : "text-muted hover:bg-surface-2 hover:text-fg",
+                  'grid place-items-center aspect-square rounded-xl transition',
+                  icon === n ? 'text-white' : 'text-muted hover:bg-surface-2 hover:text-fg'
                 )}
                 style={icon === n ? { background: color } : undefined}
               >
@@ -113,7 +116,7 @@ export function TagEditor({ open, tag, onClose }: { open: boolean; tag: Tag | nu
               onClick={() => void setTagArchived(tag.id, !tag.archived).then(onClose)}
             >
               {tag.archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
-              {tag.archived ? "Unarchive" : "Archive"}
+              {tag.archived ? 'Unarchive' : 'Archive'}
             </Button>
             <Button
               type="button"

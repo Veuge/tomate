@@ -1,11 +1,11 @@
-import { addDays, startOfWeek, subWeeks } from "date-fns";
-import { dayKey } from "@/lib/dates";
-import type { Session } from "@/lib/types";
+import { addDays, startOfWeek, subWeeks } from 'date-fns';
+import { dayKey } from '@/lib/dates';
+import type { Session } from '@/lib/types';
 
 /** Sessions that count toward stats: completed, not deleted, focus. */
 export function countable(sessions: Session[], tagId: string | null = null): Session[] {
   return sessions.filter(
-    (s) => s.kind === "focus" && s.completed && !s.deleted && (tagId === null || s.tag_id === tagId),
+    (s) => s.kind === 'focus' && s.completed && !s.deleted && (tagId === null || s.tag_id === tagId)
   );
 }
 
@@ -21,9 +21,7 @@ export function countByDay(sessions: Session[]): Map<string, number> {
 /** Columns of 7 days (Mon→Sun), oldest first, ending with the week containing `today`. */
 export function heatmapWeeks(today: Date, weeks = 53): Date[][] {
   const first = startOfWeek(subWeeks(today, weeks - 1), { weekStartsOn: 1 });
-  return Array.from({ length: weeks }, (_, w) =>
-    Array.from({ length: 7 }, (_, d) => addDays(first, w * 7 + d)),
-  );
+  return Array.from({ length: weeks }, (_, w) => Array.from({ length: 7 }, (_, d) => addDays(first, w * 7 + d)));
 }
 
 /** 0 = empty, 1–4 = increasing intensity relative to the daily goal. */

@@ -1,16 +1,18 @@
-import { useEffect, type ReactNode } from "react";
-import { Link, useBlocker } from "react-router-dom";
-import { Bell, Download, LogOut, Minus, Monitor, Moon, Plus, Sun } from "lucide-react";
-import { Button, Card, ConfirmDialog, SectionTitle, Segmented, Toggle } from "@/components/ui";
-import { db } from "@/lib/db";
-import { supabase } from "@/lib/supabase";
-import { useSyncStatus } from "@/lib/sync";
-import { playAlarm } from "@/features/audio/alarm";
-import { unlockAudio } from "@/features/audio/context";
-import { useAuth } from "@/features/auth/useAuth";
-import { SyncBadge } from "@/features/auth/SyncBadge";
-import type { AlarmSound, AmbientSound, Theme } from "./store";
-import { useSettingsDraft } from "./useSettingsDraft";
+import { useEffect, type ReactNode } from 'react';
+import { Link, useBlocker } from 'react-router-dom';
+import { Bell, Coffee, Download, LogOut, Minus, Monitor, Moon, Plus, Sun } from 'lucide-react';
+import { Button, Card, ConfirmDialog, SectionTitle, Segmented, Toggle } from '@/components/ui';
+import { db } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
+import { useSyncStatus } from '@/lib/sync';
+import { playAlarm } from '@/features/audio/alarm';
+import { unlockAudio } from '@/features/audio/context';
+import { useAuth } from '@/features/auth/useAuth';
+import { SyncBadge } from '@/features/auth/SyncBadge';
+import type { AlarmSound, AmbientSound, Theme } from './store';
+import { useSettingsDraft } from './useSettingsDraft';
+
+const supportUrl = import.meta.env.VITE_SUPPORT_URL as string | undefined;
 
 export function SettingsScreen() {
   const draft = useSettingsDraft();
@@ -18,23 +20,32 @@ export function SettingsScreen() {
   const { user } = useAuth();
 
   // In-app navigation with unsaved changes → our confirm dialog.
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => draft.dirty && currentLocation.pathname !== nextLocation.pathname);
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => draft.dirty && currentLocation.pathname !== nextLocation.pathname
+  );
   // Closing/reloading the tab → the browser's own "Leave site?" prompt (its text can't be customized).
   useEffect(() => {
     if (!draft.dirty) return;
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
-      e.returnValue = "";
+      e.returnValue = '';
     };
-    window.addEventListener("beforeunload", onBeforeUnload);
-    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+    window.addEventListener('beforeunload', onBeforeUnload);
+    return () => window.removeEventListener('beforeunload', onBeforeUnload);
   }, [draft.dirty]);
   const lastSyncedAt = useSyncStatus((x) => x.lastSyncedAt);
 
   const exportJson = async () => {
-    const data = { exportedAt: new Date().toISOString(), tags: await db.tags.toArray(), sessions: await db.sessions.toArray() };
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
-    const a = Object.assign(document.createElement("a"), { href: url, download: `pomodoro-${data.exportedAt.slice(0, 10)}.json` });
+    const data = {
+      exportedAt: new Date().toISOString(),
+      tags: await db.tags.toArray(),
+      sessions: await db.sessions.toArray(),
+    };
+    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }));
+    const a = Object.assign(document.createElement('a'), {
+      href: url,
+      download: `pomodoro-${data.exportedAt.slice(0, 10)}.json`,
+    });
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -59,13 +70,26 @@ export function SettingsScreen() {
             <Stepper value={s.longMin} min={1} max={90} onChange={(v) => draft.set({ longMin: v })} />
           </Row>
           <Row label="Long break every" hint="focus sessions">
-            <Stepper value={s.longBreakInterval} min={1} max={12} onChange={(v) => draft.set({ longBreakInterval: v })} />
+            <Stepper
+              value={s.longBreakInterval}
+              min={1}
+              max={12}
+              onChange={(v) => draft.set({ longBreakInterval: v })}
+            />
           </Row>
           <Row label="Auto-start breaks">
-            <Toggle label="Auto-start breaks" checked={s.autoStartBreaks} onChange={(v) => draft.set({ autoStartBreaks: v })} />
+            <Toggle
+              label="Auto-start breaks"
+              checked={s.autoStartBreaks}
+              onChange={(v) => draft.set({ autoStartBreaks: v })}
+            />
           </Row>
           <Row label="Auto-start focus">
-            <Toggle label="Auto-start focus" checked={s.autoStartFocus} onChange={(v) => draft.set({ autoStartFocus: v })} />
+            <Toggle
+              label="Auto-start focus"
+              checked={s.autoStartFocus}
+              onChange={(v) => draft.set({ autoStartFocus: v })}
+            />
           </Row>
           <Row label="Daily goal" hint="sessions · heatmap scale">
             <Stepper value={s.dailyGoal} min={1} max={24} onChange={(v) => draft.set({ dailyGoal: v })} />
@@ -80,7 +104,7 @@ export function SettingsScreen() {
             <Select<AlarmSound>
               value={s.alarmSound}
               onChange={(v) => draft.set({ alarmSound: v })}
-              options={{ bell: "Bell", digital: "Digital", chime: "Chime" }}
+              options={{ bell: 'Bell', digital: 'Digital', chime: 'Chime' }}
             />
           </Row>
           <Row label="Alarm volume">
@@ -103,10 +127,17 @@ export function SettingsScreen() {
             <Select<AmbientSound>
               value={s.ambientSound}
               onChange={(v) => draft.set({ ambientSound: v })}
-              options={{ none: "None", white: "White noise", pink: "Pink noise", brown: "Brown noise", rain: "Rain", ticking: "Ticking" }}
+              options={{
+                none: 'None',
+                white: 'White noise',
+                pink: 'Pink noise',
+                brown: 'Brown noise',
+                rain: 'Rain',
+                ticking: 'Ticking',
+              }}
             />
           </Row>
-          {s.ambientSound !== "none" && (
+          {s.ambientSound !== 'none' && (
             <Row label="Background volume">
               <Slider value={s.ambientVolume} onChange={(v) => draft.set({ ambientVolume: v })} />
             </Row>
@@ -117,7 +148,8 @@ export function SettingsScreen() {
               checked={s.notifications}
               onChange={(v) => {
                 draft.set({ notifications: v });
-                if (v && "Notification" in window && Notification.permission === "default") void Notification.requestPermission();
+                if (v && 'Notification' in window && Notification.permission === 'default')
+                  void Notification.requestPermission();
               }}
             />
           </Row>
@@ -132,9 +164,33 @@ export function SettingsScreen() {
             onChange={(v) => draft.set({ theme: v })}
             className="w-full"
             options={[
-              { value: "system", label: <span className="flex items-center gap-1.5"><Monitor size={14} />System</span> },
-              { value: "light", label: <span className="flex items-center gap-1.5"><Sun size={14} />Light</span> },
-              { value: "dark", label: <span className="flex items-center gap-1.5"><Moon size={14} />Dark</span> },
+              {
+                value: 'system',
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <Monitor size={14} />
+                    System
+                  </span>
+                ),
+              },
+              {
+                value: 'light',
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <Sun size={14} />
+                    Light
+                  </span>
+                ),
+              },
+              {
+                value: 'dark',
+                label: (
+                  <span className="flex items-center gap-1.5">
+                    <Moon size={14} />
+                    Dark
+                  </span>
+                ),
+              },
             ]}
           />
         </Card>
@@ -145,15 +201,24 @@ export function SettingsScreen() {
         <Card className="divide-y divide-line py-1 sm:py-1">
           {supabase && (
             <Row
-              label={user ? user.email ?? "Signed in" : "Not signed in"}
-              hint={user ? (lastSyncedAt ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString()}` : "Syncing…") : "Data stays on this device"}
+              label={user ? (user.email ?? 'Signed in') : 'Not signed in'}
+              hint={
+                user
+                  ? lastSyncedAt
+                    ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString()}`
+                    : 'Syncing…'
+                  : 'Data stays on this device'
+              }
             >
               {user ? (
                 <Button variant="ghost" onClick={() => void supabase!.auth.signOut()}>
                   <LogOut size={16} /> Sign out
                 </Button>
               ) : (
-                <Link to="/login" className="inline-flex items-center h-10 px-4 rounded-xl text-sm font-medium bg-fg text-bg">
+                <Link
+                  to="/login"
+                  className="inline-flex items-center h-10 px-4 rounded-xl text-sm font-medium bg-fg text-bg"
+                >
                   Sign in
                 </Link>
               )}
@@ -164,6 +229,18 @@ export function SettingsScreen() {
               <Download size={16} /> Export
             </Button>
           </Row>
+          {supportUrl && (
+            <Row label="Support Tomate" hint="Enjoying the app? Buy me a coffee">
+              <a
+                href={supportUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 h-10 px-4 rounded-xl text-sm font-medium bg-fg text-bg"
+              >
+                <Coffee size={16} /> Buy me a coffee
+              </a>
+            </Row>
+          )}
           <Row label="Version">
             <span className="text-sm text-muted tabular-nums">v{__APP_VERSION__}</span>
           </Row>
@@ -193,7 +270,7 @@ export function SettingsScreen() {
       )}
 
       <ConfirmDialog
-        open={blocker.state === "blocked"}
+        open={blocker.state === 'blocked'}
         title="Discard unsaved changes?"
         message="You changed some settings but didn't save them. If you leave now, those changes will be lost."
         confirmLabel="Discard changes"
@@ -217,11 +294,25 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
   );
 }
 
-function Stepper({ value, min, max, onChange }: { value: number; min: number; max: number; onChange: (v: number) => void }) {
+function Stepper({
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+}) {
   const set = (v: number) => onChange(Math.min(max, Math.max(min, v)));
   return (
     <div className="flex items-center gap-1 rounded-xl bg-surface-2 p-1">
-      <button onClick={() => set(value - 1)} aria-label="Decrease" className="grid place-items-center h-8 w-8 rounded-lg hover:bg-surface">
+      <button
+        onClick={() => set(value - 1)}
+        aria-label="Decrease"
+        className="grid place-items-center h-8 w-8 rounded-lg hover:bg-surface"
+      >
         <Minus size={14} />
       </button>
       <input
@@ -233,7 +324,11 @@ function Stepper({ value, min, max, onChange }: { value: number; min: number; ma
         onChange={(e) => e.target.value && set(Number(e.target.value))}
         className="w-10 bg-transparent text-center text-sm font-medium tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
       />
-      <button onClick={() => set(value + 1)} aria-label="Increase" className="grid place-items-center h-8 w-8 rounded-lg hover:bg-surface">
+      <button
+        onClick={() => set(value + 1)}
+        aria-label="Increase"
+        className="grid place-items-center h-8 w-8 rounded-lg hover:bg-surface"
+      >
         <Plus size={14} />
       </button>
     </div>
@@ -254,7 +349,15 @@ function Slider({ value, onChange }: { value: number; onChange: (v: number) => v
   );
 }
 
-function Select<T extends string>({ value, onChange, options }: { value: T; onChange: (v: T) => void; options: Record<T, string> }) {
+function Select<T extends string>({
+  value,
+  onChange,
+  options,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: Record<T, string>;
+}) {
   return (
     <select
       value={value}

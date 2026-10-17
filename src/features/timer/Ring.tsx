@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode } from 'react';
 
 export function Ring({ progress, color, children }: { progress: number; color: string; children: ReactNode }) {
   const r = 46;
@@ -17,7 +17,7 @@ export function Ring({ progress, color, children }: { progress: number; color: s
           strokeLinecap="round"
           strokeDasharray={c}
           strokeDashoffset={c * (1 - Math.min(1, Math.max(0, progress)))}
-          style={{ transition: "stroke-dashoffset 0.25s linear, stroke 0.3s" }}
+          style={{ transition: 'stroke-dashoffset 0.25s linear, stroke 0.3s' }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">{children}</div>

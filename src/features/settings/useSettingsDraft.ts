@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { syncNow, type SyncOutcome } from "@/lib/sync";
-import { showToast, updateToast, type Toast } from "@/components/Toast";
-import { pickSettings, useSettings, type Settings } from "./store";
+import { useState } from 'react';
+import { syncNow, type SyncOutcome } from '@/lib/sync';
+import { showToast, updateToast, type Toast } from '@/components/Toast';
+import { pickSettings, useSettings, type Settings } from './store';
 
 /**
  * Local, unsaved edits on top of the saved settings. Only fields the user touched are
@@ -23,25 +23,25 @@ export function useSettingsDraft() {
     save: async () => {
       saved.update(Object.fromEntries(changed.map((k) => [k, edits[k]])) as Partial<Settings>);
       setEdits({});
-      const id = showToast({ kind: "pending", text: "Saving settings…" });
+      const id = showToast({ kind: 'pending', text: 'Saving settings…' });
       updateToast(id, saveMessage(await syncNow()));
     },
   };
 }
 
-function saveMessage(outcome: SyncOutcome): Omit<Toast, "id"> {
+function saveMessage(outcome: SyncOutcome): Omit<Toast, 'id'> {
   switch (outcome.status) {
-    case "synced":
-      return { kind: "success", text: "Settings saved and synced" };
-    case "error":
+    case 'synced':
+      return { kind: 'success', text: 'Settings saved and synced' };
+    case 'error':
       return {
-        kind: "error",
-        text: "Saved on this device, but syncing failed",
+        kind: 'error',
+        text: 'Saved on this device, but syncing failed',
         detail: `${outcome.message}. Tap the sync badge to retry.`,
       };
-    case "skipped":
-      return outcome.reason === "offline"
-        ? { kind: "info", text: "Saved on this device", detail: "They'll sync when you're back online." }
-        : { kind: "success", text: "Settings saved" };
+    case 'skipped':
+      return outcome.reason === 'offline'
+        ? { kind: 'info', text: 'Saved on this device', detail: "They'll sync when you're back online." }
+        : { kind: 'success', text: 'Settings saved' };
   }
 }

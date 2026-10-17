@@ -1,15 +1,15 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { Phase } from "@/lib/types";
-import { PHASE_LABEL } from "@/lib/types";
-import { useSettings, type Settings } from "@/features/settings/store";
-import { recordSession } from "@/features/sessions/repo";
-import { playAlarm } from "@/features/audio/alarm";
-import { unlockAudio } from "@/features/audio/context";
-import * as E from "./engine";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import type { Phase } from '@/lib/types';
+import { PHASE_LABEL } from '@/lib/types';
+import { useSettings, type Settings } from '@/features/settings/store';
+import { recordSession } from '@/features/sessions/repo';
+import { playAlarm } from '@/features/audio/alarm';
+import { unlockAudio } from '@/features/audio/context';
+import * as E from './engine';
 
 /** Dev aid: `?speed=60` makes a minute last one second. Ignored in production builds. */
-const SPEED = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get("speed")) || 1 : 1;
+const SPEED = import.meta.env.DEV ? Number(new URLSearchParams(location.search).get('speed')) || 1 : 1;
 
 export function configFrom(s: Settings): E.TimerConfig {
   const min = 60_000 / SPEED;
@@ -63,8 +63,8 @@ export const useTimer = create<TimerStore>()(
         onPhaseEnd(finished.phase, state.phase);
       },
     }),
-    { name: "pomodoro-timer", partialize: (s) => ({ timer: s.timer }) },
-  ),
+    { name: 'pomodoro-timer', partialize: (s) => ({ timer: s.timer }) }
+  )
 );
 
 // Keep an idle timer in step with duration changes made in Settings.
@@ -79,19 +79,19 @@ function configChanged(a: Settings, b: Settings) {
 function onPhaseEnd(ended: Phase, next: Phase) {
   const s = useSettings.getState();
   playAlarm(s.alarmSound, s.alarmVolume, s.alarmRepeat, ended);
-  const title = ended === "focus" ? "Focus complete" : "Break over";
+  const title = ended === 'focus' ? 'Focus complete' : 'Break over';
   notify(title, `Next: ${PHASE_LABEL[next]}`);
 }
 
 function requestNotificationPermission() {
-  if (!useSettings.getState().notifications || !("Notification" in window)) return;
-  if (Notification.permission === "default") void Notification.requestPermission();
+  if (!useSettings.getState().notifications || !('Notification' in window)) return;
+  if (Notification.permission === 'default') void Notification.requestPermission();
 }
 
 function notify(title: string, body: string) {
-  if (!useSettings.getState().notifications || !("Notification" in window)) return;
-  if (Notification.permission !== "granted" || document.visibilityState === "visible") return;
-  const opts = { body, icon: "/icons/icon-192.png", tag: "pomodoro", renotify: true } as NotificationOptions;
+  if (!useSettings.getState().notifications || !('Notification' in window)) return;
+  if (Notification.permission !== 'granted' || document.visibilityState === 'visible') return;
+  const opts = { body, icon: '/icons/icon-192.png', tag: 'pomodoro', renotify: true } as NotificationOptions;
   if (navigator.serviceWorker?.controller) {
     void navigator.serviceWorker.ready.then((r) => r.showNotification(title, opts));
   } else {
