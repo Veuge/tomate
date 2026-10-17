@@ -46,16 +46,12 @@ Cloudflare Pages) with SPA fallback to `index.html`.
 
 ## Release
 
-From an up-to-date, clean `main`:
-
-```sh
-npm run release:patch   # or release:minor / release:major
-```
-
-This runs the tests and build, then `npm version` on a `release/vX.Y.Z` branch (commit +
-tag), pushes the branch, opens the PR (with `gh` if installed, otherwise in the browser),
-and pushes the `vX.Y.Z` tag. Merge the PR with **Create a merge commit**, not squash, so
-the tagged commit ends up on `main`. The version is shown in Settings → Account & data.
+Releases happen when a PR is merged into `main`. Before merging, add one label to the PR:
+`release:patch`, `release:minor` or `release:major`. The Release workflow
+(`.github/workflows/release.yml`) then bumps `package.json` and `package-lock.json`,
+commits and tags `vX.Y.Z` on `main`, deploys that build to Cloudflare and creates a GitHub
+Release. PRs merged without a release label are not released or deployed. The version is
+shown in Settings → Account & data.
 
 ## How it works
 
