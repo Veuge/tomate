@@ -1,4 +1,5 @@
 *.md
+*.jsonc
 
 # Dependencies
 node_modules
