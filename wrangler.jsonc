@@ -1,0 +1,9 @@
+{
+  "name": "tomate",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist",
+    // Serve index.html for unknown paths so deep links like /stats work.
+    "not_found_handling": "single-page-application"
+  }
+}
