@@ -1,0 +1,84 @@
+# Releases on merge: label a PR to main with release:patch, release:minor or release:major.
+# When it's merged, this bumps package.json + package-lock.json, commits and tags vX.Y.Z on
+# main, deploys that build to Cloudflare and creates a GitHub Release.
+# PRs merged without a release label are not released or deployed.
+name: Release
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# One release at a time, so two quick merges can't bump to the same version.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: >-
+      github.event.pull_request.merged == true && (
+        contains(github.event.pull_request.labels.*.name, 'release:major') ||
+        contains(github.event.pull_request.labels.*.name, 'release:minor') ||
+        contains(github.event.pull_request.labels.*.name, 'release:patch'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pick the version bump
+        id: bump
+        env:
+          LABELS: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+        run: |
+          # The biggest bump wins if several labels are set.
+          for level in major minor patch; do
+            if echo "$LABELS" | grep -q "\"release:$level\""; then
+              echo "level=$level" >> "$GITHUB_OUTPUT"
+              break
+            fi
+          done
+
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          # A personal access token is only needed if branch protection blocks pushes to main.
+          token: ${{ secrets.RELEASE_TOKEN || github.token }}
+
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+
+      - run: npm ci
+
+      - name: Bump version, commit and tag
+        id: version
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          tag="$(npm version ${{ steps.bump.outputs.level }} -m "Release v%s")"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - run: npm test
+
+      # Built after the bump so the app shows the new version.
+      - name: Build
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPPORT_URL: ${{ vars.VITE_SUPPORT_URL }}
+
+      - name: Push commit and tag
+        run: git push --atomic origin HEAD:main "${{ steps.version.outputs.tag }}"
+
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ steps.version.outputs.tag }}" --generate-notes --title "${{ steps.version.outputs.tag }}"
