@@ -18,7 +18,7 @@ export function AppShell() {
       <nav className="hidden md:flex md:flex-col md:w-56 md:shrink-0 md:border-r md:border-line md:p-4 md:gap-1 md:sticky md:top-0 md:h-dvh">
         <div className="flex items-center gap-2 px-3 py-4 mb-2">
           <img src="/icons/icon.svg" alt="" className="h-7 w-7" />
-          <span className="font-semibold">Pomodoro</span>
+          <span className="font-semibold">Tomate</span>
         </div>
         {NAV.map(({ to, label, icon: Icon }) => (
           <NavLink
