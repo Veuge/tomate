@@ -44,14 +44,41 @@ Cloudflare Pages) with SPA fallback to `index.html`.
 - **Android:** Chrome → Install app
 - **macOS / Windows:** Chrome or Edge → install icon in the address bar (Safari on macOS: File → Add to Dock)
 
-## Release
+## CI/CD
 
-Releases happen when a PR is merged into `main`. Before merging, add one label to the PR:
-`release:patch`, `release:minor` or `release:major`. The Release workflow
-(`.github/workflows/release.yml`) then bumps `package.json` and `package-lock.json`,
-commits and tags `vX.Y.Z` on `main`, deploys that build to Cloudflare and creates a GitHub
-Release. PRs merged without a release label are not released or deployed. The version is
-shown in Settings → Account & data.
+Every PR, and every push to `main`, runs CI (`.github/workflows/ci.yml`): typecheck, format
+check, tests and build.
+
+### Releasing a new version
+
+A new version is released only when a PR to `main` **with a release label** is merged. Add
+one of these labels to the PR before merging:
+
+| Label           | Use for                   | Example           |
+| --------------- | ------------------------- | ----------------- |
+| `release:patch` | Bug fixes, small tweaks   | `1.1.0` → `1.1.1` |
+| `release:minor` | New features              | `1.1.0` → `1.2.0` |
+| `release:major` | Breaking changes          | `1.1.0` → `2.0.0` |
+
+```sh
+gh pr edit <number> --add-label release:minor
+```
+
+When the PR is merged, the Release workflow (`.github/workflows/release.yml`):
+
+1. Bumps `package.json` and `package-lock.json`, then commits and tags `vX.Y.Z` on `main`.
+2. Runs the tests and builds the app.
+3. Deploys the build to Cloudflare (`wrangler.jsonc`).
+4. Creates a GitHub Release with generated notes.
+
+PRs merged **without** a release label are not released or deployed. If a PR has several
+labels, the biggest bump wins. The workflow pushes a commit to `main`, so run
+`git pull --tags` afterwards. The version is shown in Settings → Account & data.
+
+The workflow needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` secrets, plus the
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` and `VITE_SUPPORT_URL` repository variables.
+If branch protection blocks pushes to `main`, add a `RELEASE_TOKEN` secret (a personal
+access token).
 
 ## How it works
 
